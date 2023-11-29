@@ -1,8 +1,7 @@
-import os
-import subprocess
 from haas.tools.tool import Tool
-import shlex
+import requests
 import logging
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -39,28 +38,22 @@ class WebRetrieve(Tool):
         """
 
     def do_it(self, url):
-        # Sanitize the URL
-        url = shlex.quote(url)
+        # Send a GET request to the URL
+        response = requests.get(url)
 
-        # Execute the lynx command in an isolated environment
-        lynx_dump_command = f"lynx --display_charset=utf8 --dump {url}"
+        # Check if the request was successful
+        if response.status_code != 200:
+            raise RuntimeError(f"Web page retrieval error: {response.status_code}")
 
-        # Adding logging to capture lynx command output
-        logger.info(f"Lynx command: {lynx_dump_command}")
+        # Create a BeautifulSoup object and specify the parser
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        result = subprocess.run(
-            lynx_dump_command,
-            shell=True,
-            text=True,
-            capture_output=True,
-            # env={'PATH': '/usr/sbin:/usr/bin'},
-            # cwd='/tmp'
-        )
+        # Remove script tags and style tags
+        for script in soup(["script", "style"]):
+            script.decompose()
 
-        logger.debug(f"Command output: {result.stdout}")
-        logger.debug(f"Command error: {result.stderr}")
+        # Get the text from the soup and remove leading and trailing whitespaces
+        text = soup.get_text(strip=True, separator=" ")
 
-        if result.stderr:
-            raise RuntimeError("Web page retrieval error:\n" + result.stderr)
-
-        return result.stdout
+        # Return the text content of the response
+        return text

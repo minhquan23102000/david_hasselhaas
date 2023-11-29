@@ -1,6 +1,0 @@
-pyautogen
-memgpt
-transitions
-inflection
-tree_sitter
-tree-sitter-languages
