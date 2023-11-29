@@ -3,14 +3,14 @@ import subprocess
 import tree_sitter
 from tree_sitter_languages import get_language, get_parser
 import inspect
-from .tool import Tool
+from haas.tools.tool import Tool
 
 
 class ReadCodeFromFile(Tool):
     LANGUAGES = {
-        '.py': 'python',
-        '.js': 'javascript',
-        '.rb': 'ruby',
+        ".py": "python",
+        ".js": "javascript",
+        ".rb": "ruby",
         # More languages and their corresponding file extensions can be added here
     }
 
@@ -24,19 +24,22 @@ class ReadCodeFromFile(Tool):
                     "type": "object",
                     "properties": {
                         "relative_path": {
-                            "type": "string", "description": "Relative path to the code file"
+                            "type": "string",
+                            "description": "Relative path to the code file",
                         },
                         "ast_path": {
-                            "type": "string", "description": "AST path referencing the component to read. See docs/tree-sitter_pattern-matching-with-queries.md for general instructions and docs/tree-sitter_python_node-type.json for python node types."
-                        }
+                            "type": "string",
+                            "description": "AST path referencing the component to read. See docs/tree-sitter_pattern-matching-with-queries.md for general instructions and docs/tree-sitter_python_node-type.json for python node types.",
+                        },
                     },
-                    "required": ["relative_path", "ast_path"]
-                }
-            }
+                    "required": ["relative_path", "ast_path"],
+                },
+            },
         }
 
     def gpt4_prompt_instructions(self):
-        return inspect.cleandoc("""
+        return inspect.cleandoc(
+            """
             ## Read Code File Tool (read_code_from_file):
 
             This tool uses Tree-sitter, a parser generator tool and an incremental parsing library, to read and return text from a code file based on an AST (Abstract Syntax Tree) path.
@@ -87,7 +90,8 @@ class ReadCodeFromFile(Tool):
             For detailed Tree-sitter query syntax for supported languages, please refer to [Tree-sitter documentation](https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries). Cached copies of the documentation for supported languages are available in the `docs` directory of this repository.
 
             By following these instructions and utilizing appropriate examples and resources, users can construct effective AST path queries tailored to their specific needs when working with the `read_code_from_file` tool.
-        """)
+        """
+        )
 
     def do_it(self, relative_path, ast_path):
         # Ensure the file exists
@@ -105,7 +109,7 @@ class ReadCodeFromFile(Tool):
         parser = get_parser(language_name)
 
         # Read the file and parse it
-        with open(relative_path, 'rb') as file:
+        with open(relative_path, "rb") as file:
             code = file.read()
         tree = parser.parse(code)
 
@@ -118,6 +122,6 @@ class ReadCodeFromFile(Tool):
         for node, _type in captures:
             start = node.start_byte
             end = node.end_byte
-            result.append(code[start:end].decode('utf8'))
+            result.append(code[start:end].decode("utf8"))
 
         return result

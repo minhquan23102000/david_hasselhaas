@@ -1,6 +1,7 @@
 import os
 import inspect
-from .tool import Tool
+from haas.tools.tool import Tool
+
 
 class WriteTextToFile(Tool):
     def gpt4_assistants_tool(self):
@@ -12,19 +13,35 @@ class WriteTextToFile(Tool):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "relative_path": {"type": "string", "description": "Relative path to the file to write"},
-                        "new_text": {"type": "string", "description": "New text to insert into the file"},
-                        "text_to_replace": {"type": "string", "description": "If present, the first instance of text_to_replace after start_offset will be replaced with new_text, remember that any text being replaced must be replicated in new_text if you want to keep it. If text_to_replace is '', then new_text will be inserted at start_offset. If text_to_replace is None, then file will be truncated to start_offset and new_text will be appended to the file."},
-                        "start_offset": {"type": "string", "description": "Start character offset for the write, defaults to 0, negative start_offset indexes from the end of the file"},
-                        "append": {"type": "boolean", "description": "If true and text_to_replace is an empty string, new_text will be inserted after the character at the position of start_offset."}
+                        "relative_path": {
+                            "type": "string",
+                            "description": "Relative path to the file to write",
+                        },
+                        "new_text": {
+                            "type": "string",
+                            "description": "New text to insert into the file",
+                        },
+                        "text_to_replace": {
+                            "type": "string",
+                            "description": "If present, the first instance of text_to_replace after start_offset will be replaced with new_text, remember that any text being replaced must be replicated in new_text if you want to keep it. If text_to_replace is '', then new_text will be inserted at start_offset. If text_to_replace is None, then file will be truncated to start_offset and new_text will be appended to the file.",
+                        },
+                        "start_offset": {
+                            "type": "string",
+                            "description": "Start character offset for the write, defaults to 0, negative start_offset indexes from the end of the file",
+                        },
+                        "append": {
+                            "type": "boolean",
+                            "description": "If true and text_to_replace is an empty string, new_text will be inserted after the character at the position of start_offset.",
+                        },
                     },
-                    "required": ["relative_path", "new_text"]
-                }
-            }
+                    "required": ["relative_path", "new_text"],
+                },
+            },
         }
 
     def gpt4_prompt_instructions(self):
-        return inspect.cleandoc('''
+        return inspect.cleandoc(
+            """
             ## Write Text to a File (write_text_to_file):
 
             This tool allows you to write new text to a specified file. You can either add text, insert it at a particular offset, or replace existing text based on provided parameters.
@@ -58,15 +75,23 @@ class WriteTextToFile(Tool):
                 append=True
             )
             ```
-        ''')
+        """
+        )
 
-    def do_it(self, relative_path:str, new_text:str, text_to_replace:str="", start_offset:int=0, append:bool=False):
+    def do_it(
+        self,
+        relative_path: str,
+        new_text: str,
+        text_to_replace: str = "",
+        start_offset: int = 0,
+        append: bool = False,
+    ):
         # Create path if it doesn't exist
         if not os.path.exists(os.path.dirname(relative_path)):
             os.makedirs(os.path.dirname(relative_path), exist_ok=True)
 
         # Open file with read & write permissions, create the file if it doesn't exist
-        with open(relative_path, 'a+', encoding='utf-8') as file:
+        with open(relative_path, "a+", encoding="utf-8") as file:
             file.seek(0)
             content = file.read()
 
@@ -85,7 +110,9 @@ class WriteTextToFile(Tool):
             if text_to_replace == "":
                 content = content[:start_offset] + new_text + content[start_offset:]
             else:
-                content = content[:start_offset] + content[start_offset:].replace(text_to_replace, new_text, 1)  # Replace the first instance of text_to_replace # type: ignore
+                content = content[:start_offset] + content[start_offset:].replace(
+                    text_to_replace, new_text, 1
+                )  # Replace the first instance of text_to_replace # type: ignore
 
             file.seek(0)
             file.truncate()

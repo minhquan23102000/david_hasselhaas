@@ -1,7 +1,7 @@
 import inspect
 import importlib
 from inflection import camelize
-from .tool import Tool
+from haas.tools.tool import Tool
 from haas.lib.agent_manager.agent_state_machine import AgentStateMachine
 
 
@@ -15,18 +15,36 @@ class CreateAgent(Tool):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "name": {"type": "string", "description": "Name of the new agent to create."},
-                        "agent_definition": {"type": "string", "description": "Reference to an existing agent definition"},
-                        "prompt_definition": {"type": "string", "description": "Reference to an existing prompt definition"},
-                        "tool_definitions": {"type": "array", "description": "List of references to existing tool definitions", "items": {"type": "string"}},
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the new agent to create.",
+                        },
+                        "agent_definition": {
+                            "type": "string",
+                            "description": "Reference to an existing agent definition",
+                        },
+                        "prompt_definition": {
+                            "type": "string",
+                            "description": "Reference to an existing prompt definition",
+                        },
+                        "tool_definitions": {
+                            "type": "array",
+                            "description": "List of references to existing tool definitions",
+                            "items": {"type": "string"},
+                        },
                     },
-                    "required": ["agent_definition", "prompt_definition", "tool_definitions"]
-                }
-            }
+                    "required": [
+                        "agent_definition",
+                        "prompt_definition",
+                        "tool_definitions",
+                    ],
+                },
+            },
         }
 
     def gpt4_prompt_instructions(self):
-        return inspect.cleandoc("""
+        return inspect.cleandoc(
+            """
             ## Create Agent (create_agent):
 
             This tool requires references to existing agent, prompt, and tool definitions to create a new agent within the agent_manager.
@@ -51,7 +69,8 @@ class CreateAgent(Tool):
                     tool_definitions=["list_directory", "read_text_from_file", "write_whole_text_file", "run_python_test"]
                 )
             ```
-        """)
+        """
+        )
 
     def do_it(self, name, agent_definition, prompt_definition, tool_definitions):
         # Dynamically load the agent class using the full agent class name from the definition
@@ -62,7 +81,7 @@ class CreateAgent(Tool):
         agent_class = getattr(agent_module, agent_class_name)
 
         # Fetch the prompt contents from the provided definition
-        with open(f'./haas/prompts/{prompt_definition}', 'r') as prompt_file:
+        with open(f"./haas/prompts/{prompt_definition}", "r") as prompt_file:
             prompt_contents = prompt_file.read()
 
         # Get the tools for the new agent

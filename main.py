@@ -21,8 +21,10 @@ from haas.tools.write_whole_text_file import WriteWholeTextFile
 from haas.filters.restrict_path_to_dir import RestrictPathToDir
 from haas.filters.shell_command_filter import ShellCommandFilter
 
+from pathlib import Path
+
 # Directory to restrict the operation of filesystem tools
-restricted_directory = "."
+restricted_directory = str(Path.cwd())
 
 # Initialize tools with directory restrictions applied
 list_dir_tool = RestrictPathToDir(restricted_directory, ListDirectory())
@@ -69,7 +71,7 @@ sab_agent = Gpt4Agent(
         SendToAgent(),
         WebRetrieve(),
         restricted_git_tool,  # Add restricted git capability
-        restricted_gh_tool,  # Add restricted gh capability
+        # restricted_gh_tool,  # Add restricted gh capability
     ],
 )
 
